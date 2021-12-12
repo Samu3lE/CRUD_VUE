@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # crudvue
 
 ## Project setup
@@ -51,3 +52,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 See [Configuration Reference](https://cli.vuejs.org/config/).
 >>>>>>> 8ce30f0 (init)
 >>>>>>> 2e96723 (Commit merge branch)
+=======
+# CRUD_VUE
+Proyecto CRUD con VUE y PHP
+>>>>>>> a570014 (Initial commit)
