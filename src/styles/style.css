@@ -1,0 +1,27 @@
+#nav {
+    padding: 30px;
+}
+
+#nav a {
+    cursor: pointer;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+    color: #42b983;
+}
+
+.card-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.container {
+    margin-top: 4rem;
+    text-align: left;
+}
+
+.form-group {
+    margin: 1rem 0;
+}
