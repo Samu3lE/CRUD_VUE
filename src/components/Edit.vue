@@ -11,10 +11,10 @@
               class="form-control"
               name="name"
               id="name"
-              v-model="employee.name"
               aria-describedby="helpId"
               placeholder="Nombre y Apellido"
               required
+              v-model="employee.name"
             />
             <small id="helpId" class="form-text text-muted"
               >Escribe nombre y apellido del empleado</small
@@ -27,10 +27,10 @@
               class="form-control"
               name="email"
               id="email"
-              v-model="employee.email"
               aria-describedby="emailHelpId"
               placeholder="Correoelectronico@mail.co"
               required
+              v-model="employee.email"
             />
             <small id="emailHelpId" class="form-text text-muted"
               >Ingrese el correo electronico del empleado</small
@@ -52,46 +52,38 @@
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      employee: {},
-    };
-  },
-  created: function () {
-    this.SearchEmployeesByID();
-  },
-  methods: {
-    SearchEmployeesByID() {
-      fetch("http://localhost/empleados/?search=" + this.$route.params.id)
-        .then((resp) => resp.json())
-        .then((data) => {
-          console.log(data);
+import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+import { computed, onMounted } from "vue";
 
-          this.employee = data[0];
-        })
-        .catch(console.log);
-    },
-    UpdateEmployee() {
+export default {
+  setup() {
+    const store = useStore();
+    const route = useRoute();
+
+    onMounted(() => {
+      store.dispatch("crudStore/SearchEmployeesByID", route.params.id);
+    });
+    let employee = computed(() => store.state.crudStore.entries);
+
+    const UpdateEmployee = () => {
       let sendData = {
-        id: this.$route.params.id,
-        name: this.employee.name,
-        email: this.employee.email,
+        id: route.params.id,
+        name: employee.value.name,
+        email: employee.value.email,
       };
 
-      fetch("http://localhost/empleados/?update=" + this.$route.params.id, {
-        method: "POST",
-        body: JSON.stringify(sendData),
-      })
-        .then((response) => {
-          response.json();
-        })
-        .then((data) => {
-          console.log(data);
-          window.location.href = "/";
-        })
-        .catch(console.error);
-    },
+      let UpdateData = store.dispatch("crudStore/UpdateEmployee", sendData);
+
+      UpdateData
+        ? (window.location.href = "/")
+        : console.error("Error al Actualizar");
+    };
+
+    return {
+      employee,
+      UpdateEmployee,
+    };
   },
 };
 </script>

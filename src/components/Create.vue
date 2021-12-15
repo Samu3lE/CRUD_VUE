@@ -52,30 +52,31 @@
 </template>
 
 <script>
+import { useStore } from "vuex";
+
 export default {
-  data() {
-    return {
-      employee: {},
-    };
-  },
-  methods: {
-    CreateEmployee() {
-      let sendData = {
-        name: this.employee.name,
-        email: this.employee.email,
+  setup() {
+    const store = useStore();
+
+    let employee = {};
+
+    const CreateEmployee = () => {
+      const sendData = {
+        name: employee.name,
+        email: employee.email,
       };
-      console.log(sendData);
-      fetch("http://localhost/empleados/?create=1", {
-        method: "POST",
-        body: JSON.stringify(sendData),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          window.location.href = "/";
-        })
-        .catch(console.error);
-    },
+      // console.log("sendData", sendData);
+      let InsertData = store.dispatch("crudStore/CreateEmployee", sendData);
+      // console.log("InsertaData", InsertData);
+      InsertData
+        ? (window.location.href = "/")
+        : console.error("Error al insertar");
+    };
+
+    return {
+      CreateEmployee,
+      employee,
+    };
   },
 };
 </script>

@@ -75,36 +75,29 @@
 </template>
 
 <script>
+import { computed, onMounted } from "vue";
+import { useStore } from "vuex";
+
 export default {
-  data() {
-    return {
-      employees: [],
+  setup() {
+    const store = useStore();
+    onMounted(() => {
+      store.dispatch("crudStore/SearchEmployees");
+    });
+    const employees = computed(() => store.state.crudStore.entries);
+
+    const deleteEmployee = (idEmployee) => {
+      let deleteData = store.dispatch("crudStore/DeleteEmployee", idEmployee);
+
+      deleteData
+        ? (window.location.href = "/")
+        : console.error("Error al insertar");
     };
-  },
-  created: function () {
-    this.SearchEmployees();
-  },
-  methods: {
-    SearchEmployees() {
-      fetch("http://localhost/empleados/")
-        .then((resp) => resp.json())
-        .then((data) => {
-          this.employees = [];
-          if (typeof data[0].success === "undefined") {
-            this.employees = data;
-          }
-        })
-        .catch(console.log);
-    },
-    deleteEmployee(idEmployee) {
-      fetch("http://localhost/empleados/?delete=" + idEmployee)
-        .then((resp) => resp.json())
-        .then((data) => {
-          console.log(data);
-          window.location.href = "/";
-        })
-        .catch(console.log);
-    },
+
+    return {
+      employees,
+      deleteEmployee,
+    };
   },
 };
 </script>

@@ -16,19 +16,6 @@ body {
   color: #2c3e50;
 }
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-
 .btn-group button {
   margin: 0 1rem;
 }
@@ -37,18 +24,5 @@ body {
   margin-top: 2rem;
   display: inherit;
   text-align: center;
-}
-
-.card-header {
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.container {
-  margin-top: 4rem;
-  text-align: left;
-}
-.form-group {
-  margin: 1rem 0;
 }
 </style>
