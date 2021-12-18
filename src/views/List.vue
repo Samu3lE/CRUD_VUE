@@ -21,10 +21,11 @@
               <td>{{ employee.email }}</td>
               <td>
                 <div class="btn-group" role="group" aria-label="">
-                  <router-link
-                    :to="{ name: 'Edit', params: { id: employee.id } }"
+                  <button
+                    v-on:click="showAlertUpdate(employee.id)"
                     class="btn btn-outline-info"
                   >
+                    <!-- :to="{ name: 'Edit', params: { id: employee.id } }" -->
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -41,11 +42,11 @@
                         d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
                       />
                     </svg>
-                  </router-link>
+                  </button>
                   <button
                     type="button"
                     class="btn btn-outline-danger"
-                    v-on:click="deleteEmployee(employee.id)"
+                    v-on:click="showAlertDelete(employee.id)"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -77,26 +78,83 @@
 <script>
 import { computed, onMounted } from "vue";
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+
+import Swal from "sweetalert2";
 
 export default {
   setup() {
     const store = useStore();
+    const router = useRouter();
+
     onMounted(() => {
       store.dispatch("crudStore/SearchEmployees");
     });
     const employees = computed(() => store.state.crudStore.entries);
 
-    const deleteEmployee = (idEmployee) => {
-      let deleteData = store.dispatch("crudStore/DeleteEmployee", idEmployee);
+    const showAlertUpdate = (idEmployee) => {
+      // useRouter().push({ name: "entry", params: { id: idEmployee } });
+      // window.location.href = `/edit/:${idEmployee}`;
 
-      deleteData
-        ? (window.location.href = "/")
-        : console.error("Error al insertar");
+      router.push({
+        name: "Edit",
+        query: {
+          id: idEmployee,
+        },
+      });
+    };
+
+    const showAlertDelete = async (idEmployee) => {
+      const { isConfirmed } = await Swal.fire({
+        title: "¿Está seguro?",
+        text: "Una vez borrado, no se puede recuperar!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si, estoy seguro!",
+      });
+
+      if (isConfirmed) {
+        Swal.fire({
+          title: "Espere por favor",
+          allowOutsideClick: false,
+        });
+        Swal.showLoading();
+        const deleted = await deleteEmployee(idEmployee);
+
+        if (deleted) {
+          await Swal.fire(
+            "Eliminado!",
+            "La entrada ha sido eliminada",
+            "success"
+          );
+
+          router.go();
+        } else {
+          Swal.fire("Oops!", "La entrada no ha sido eliminada", "error");
+        }
+      }
+    };
+
+    const deleteEmployee = async (idEmployee) => {
+      try {
+        let deleteData = await store.dispatch(
+          "crudStore/DeleteEmployee",
+          idEmployee
+        );
+        console.log("datos luego de eliminar", deleteData);
+        return true;
+      } catch (error) {
+        console.error("Error Delete", error);
+        return false;
+      }
     };
 
     return {
       employees,
-      deleteEmployee,
+      showAlertDelete,
+      showAlertUpdate,
     };
   },
 };

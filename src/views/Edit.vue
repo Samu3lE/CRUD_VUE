@@ -52,32 +52,78 @@
 </template>
 
 <script>
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { computed, onMounted } from "vue";
+
+import Swal from "sweetalert2";
 
 export default {
   setup() {
     const store = useStore();
     const route = useRoute();
+    const router = useRouter();
+    const { id } = route.query;
+    let sendData = {};
 
-    onMounted(() => {
-      store.dispatch("crudStore/SearchEmployeesByID", route.params.id);
+    onMounted(async () => {
+      await store.dispatch("crudStore/SearchEmployeesByID", id);
     });
+
     let employee = computed(() => store.state.crudStore.entries);
 
-    const UpdateEmployee = () => {
-      let sendData = {
-        id: route.params.id,
+    const UpdateEmployee = async () => {
+      sendData = {
+        id,
         name: employee.value.name,
         email: employee.value.email,
       };
+      console.log("sendData", sendData);
+      const { isConfirmed } = await Swal.fire({
+        title: "¿Está seguro?",
+        text: "Los datos del empleado serán actualizados!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si, estoy seguro!",
+      });
 
-      let UpdateData = store.dispatch("crudStore/UpdateEmployee", sendData);
+      if (isConfirmed) {
+        Swal.fire({
+          title: "Espere por favor",
+          allowOutsideClick: false,
+        });
+        Swal.showLoading();
 
-      UpdateData
-        ? (window.location.href = "/")
-        : console.error("Error al Actualizar");
+        try {
+          const updated = await store.dispatch(
+            "crudStore/UpdateEmployee",
+            sendData
+          );
+
+          if (updated) {
+            await Swal.fire(
+              "Actualizado!",
+              "La entrada ha sido actualizada",
+              "success"
+            );
+            router.push({ name: "List" });
+          } else {
+            Swal.fire(
+              "Oops!",
+              "Los datos no fueron actualizados: " + updated,
+              "error"
+            );
+          }
+        } catch (error) {
+          Swal.fire(
+            "Oops!",
+            "Los datos no fueron actualizados: " + error,
+            "error"
+          );
+        }
+      }
     };
 
     return {
@@ -88,4 +134,10 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.btn-group {
+  margin-top: 2rem;
+  display: block;
+  text-align: center;
+}
+</style>

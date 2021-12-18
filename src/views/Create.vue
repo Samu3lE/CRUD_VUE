@@ -53,26 +53,44 @@
 
 <script>
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import Swal from "sweetalert2";
 
 export default {
   setup() {
     const store = useStore();
-
+    const router = useRouter();
     let employee = {};
 
-    const CreateEmployee = () => {
+    const CreateEmployee = async () => {
       const sendData = {
         name: employee.name,
         email: employee.email,
       };
-      // console.log("sendData", sendData);
-      let InsertData = store.dispatch("crudStore/CreateEmployee", sendData);
-      // console.log("InsertaData", InsertData);
-      InsertData
-        ? (window.location.href = "/")
-        : console.error("Error al insertar");
-    };
+      try {
+        const Created = await store.dispatch(
+          "crudStore/CreateEmployee",
+          sendData
+        );
 
+        if (Created) {
+          await Swal.fire(
+            "Registrado!",
+            "El empleado ha sido registrado exitosamente",
+            "success"
+          );
+          router.push({ name: "List" });
+        } else {
+          Swal.fire("Oops!", "El empleado no ha sido registrado", "error");
+        }
+      } catch (error) {
+        Swal.fire(
+          "Oops!",
+          "El empleado no ha sido registrado: " + error,
+          "error"
+        );
+      }
+    };
     return {
       CreateEmployee,
       employee,
@@ -81,4 +99,10 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.btn-group {
+  margin-top: 2rem;
+  display: block;
+  text-align: center;
+}
+</style>

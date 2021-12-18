@@ -19,10 +19,4 @@ body {
 .btn-group button {
   margin: 0 1rem;
 }
-
-.btn-group {
-  margin-top: 2rem;
-  display: inherit;
-  text-align: center;
-}
 </style>

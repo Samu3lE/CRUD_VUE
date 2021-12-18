@@ -1,60 +1,65 @@
 export default {
     async SearchEmployees({ commit }) {
-        try {
-            const query = await fetch("http://localhost/empleados/");
-            const resp = await query.json();
-            // console.log("respose SearchEmployees", resp);
-            commit("setEmployees", resp);
-        } catch (error) {
-            console.log(error);
-        }
+        return fetch("http://localhost/empleados/?list").then(async(response) => {
+            const resp = await response.json();
+            return new Promise((resolve, reject) => {
+                response.ok ? resolve(resp) : reject(resp);
+                commit("setEmployees", resp);
+            });
+        });
     },
 
     async SearchEmployeesByID({ commit }, id_employee) {
-        const query = await fetch(
-            `http://localhost/empleados/?search=${id_employee}`
+        return fetch(`http://localhost/empleados/?search=${id_employee}`).then(
+            async(response) => {
+                const resp = await response.json();
+                return new Promise((resolve, reject) => {
+                    response.ok ? resolve(resp) : reject(resp);
+                    commit("setEmployees", resp[0]);
+                });
+            }
         );
-        const resp = await query.json();
-        commit("setEmployees", resp[0]);
     },
 
     async CreateEmployee({ commit }, sendData) {
-        console.log(sendData);
-        const query = await fetch("http://localhost/empleados/?create=1", {
+        return fetch("http://localhost/empleados/?create=1", {
             method: "POST",
             body: JSON.stringify(sendData),
+        }).then(async(response) => {
+            const res = await response.json();
+            return new Promise((resolve, reject) => {
+                response.ok ? resolve(res) : reject(res);
+                commit("setEmployees", res);
+            });
         });
-        const resp = await query.json();
-
-        console.log("respuesta", resp);
-        commit("setEmployees", resp);
     },
 
     async UpdateEmployee({ commit }, sendData) {
-        try {
-            const { id } = sendData;
-            const query = await fetch(`http://localhost/empleados/?update=${id}`, {
-                method: "POST",
-                body: JSON.stringify(sendData),
+        const { id } = sendData;
+        console.log("fetchUpdate:", `http://localhost/empleados/?update=${id}`);
+
+        return fetch(`http://localhost/empleados/?update=${id}`, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+        }).then(async(response) => {
+            const resp = await response.json();
+
+            return new Promise((resolve, reject) => {
+                response.ok ? resolve(resp) : reject(resp);
+                commit("setEmployees", resp);
             });
-            const resp = query.json();
-            console.log(resp);
-            console.log(commit);
-        } catch (error) {
-            console.log(error);
-        }
+        });
     },
 
     async DeleteEmployee({ commit }, idEmployee) {
-        try {
-            const query = await fetch(
-                `http://localhost/empleados/?delete=${+idEmployee}`
-            );
-            const resp = await query.json();
-            console.log("Respuesta del action Delete", resp);
-            console.log(commit);
-        } catch (error) {
-            console.log(error);
-        }
+        console.log("Commit", commit);
+        return fetch(`http://localhost/empleados/?delete=${idEmployee}`).then(
+            async(response) => {
+                const res = await response.json();
+                return new Promise((resolve, reject) => {
+                    response.ok ? resolve(res) : reject(res);
+                });
+            }
+        );
     },
 };
