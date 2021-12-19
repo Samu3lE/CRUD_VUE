@@ -30,7 +30,6 @@
               v-model="employee.email"
               aria-describedby="emailHelpId"
               placeholder="Correoelectronico@mail.co"
-              required
             />
             <small id="emailHelpId" class="form-text text-muted"
               >Ingrese el correo electronico del empleado</small
