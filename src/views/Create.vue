@@ -1,71 +1,65 @@
 <template>
-  <div class="container">
-    <div class="card">
-      <div class="card-header">Agregar Nuevo Empleado</div>
-      <div class="card-body">
-        <form v-on:submit.prevent="CreateEmployee">
-          <div class="form-group">
-            <label for="name">Nombre y Apellido:</label>
-            <input
-              type="text"
-              class="form-control"
-              name="name"
-              id="name"
-              v-model="employee.name"
-              aria-describedby="helpId"
-              placeholder="Nombre y Apellido"
-              required
-            />
-            <small id="helpId" class="form-text text-muted"
-              >Escribe nombre y apellido del empleado</small
-            >
-          </div>
-          <div class="form-group">
-            <label for="email">Correo:</label>
-            <input
-              type="email"
-              class="form-control"
-              name="email"
-              id="email"
-              v-model="employee.email"
-              aria-describedby="emailHelpId"
-              placeholder="Correoelectronico@mail.co"
-            />
-            <small id="emailHelpId" class="form-text text-muted"
-              >Ingrese el correo electronico del empleado</small
-            >
-          </div>
+  <Modal ref="modal" @close="close">
+    <template v-slot:title>
+      <span class="text-h5">Datos Empleado</span>
+    </template>
 
-          <div class="btn-group" role="group" aria-label="">
-            <button type="submit" class="btn btn-outline-success">
-              Agregar
-            </button>
-            <router-link :to="{ name: 'List' }" class="btn btn-outline-danger"
-              >Cancelar</router-link
-            >
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+    <template v-slot:body>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            label="Legal name*"
+            hint="example of persistent helper text"
+            persistent-hint
+            required
+            v-model="employee.name"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            label="Email*"
+            required
+            v-model="employee.email"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+    </template>
+    <!-- actions -->
+    <template v-slot:actions>
+      <v-btn
+        color="blue darken-1"
+        text
+        aria-label="Agregar"
+        @click="employeeEvent"
+      >
+        Agregar
+      </v-btn>
+    </template>
+  </Modal>
 </template>
 
 <script>
+import { ref } from "vue";
 import { useStore } from "vuex";
-import { useRouter } from "vue-router";
+
 import Swal from "sweetalert2";
 
-export default {
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-    let employee = {};
+import Modal from "@/components/ModalForm.vue";
 
-    const CreateEmployee = async () => {
-      const sendData = {
-        name: employee.name,
-        email: employee.email,
-      };
+export default {
+  components: { Modal },
+  setup(props, ctx) {
+    const store = useStore();
+
+    const employee = ref({});
+
+    const employeeEvent = async () => {
+      await CreateEmployee(employee.value);
+    };
+
+    const CreateEmployee = async (sendData) => {
       try {
         const Created = await store.dispatch(
           "crudStore/CreateEmployee",
@@ -73,12 +67,17 @@ export default {
         );
 
         if (Created) {
-          await Swal.fire(
+          const isConfirm = await Swal.fire(
             "Registrado!",
             "El empleado ha sido registrado exitosamente",
             "success"
           );
-          router.push({ name: "List" });
+
+          if (isConfirm) {
+            modal.value.close();
+            ctx.emit("finishSuccess");
+          }
+          // router.push({ name: "List" });
         } else {
           Swal.fire("Oops!", "El empleado no ha sido registrado", "error");
         }
@@ -90,18 +89,25 @@ export default {
         );
       }
     };
+
+    const modal = ref(null);
+    const open = () => {
+      console.log("entra Open");
+      for (const key in employee.value) {
+        employee.value[key] = "";
+      }
+      modal.value.open();
+    };
+
     return {
-      CreateEmployee,
       employee,
+      open,
+      close,
+      modal,
+      employeeEvent,
     };
   },
 };
 </script>
 
-<style scoped>
-.btn-group {
-  margin-top: 2rem;
-  display: block;
-  text-align: center;
-}
-</style>
+<style scoped></style>

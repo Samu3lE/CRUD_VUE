@@ -1,92 +1,74 @@
 <template>
-  <div class="container">
-    <div class="card">
-      <div class="card-header">Modificar Datos Empleado</div>
-      <div class="card-body">
-        <form v-on:submit.prevent="UpdateEmployee">
-          <div class="form-group">
-            <label for="name">Nombre y Apellido:</label>
-            <input
-              type="text"
-              class="form-control"
-              name="name"
-              id="name"
-              aria-describedby="helpId"
-              placeholder="Nombre y Apellido"
-              required
-              v-model="employee.name"
-            />
-            <small id="helpId" class="form-text text-muted"
-              >Escribe nombre y apellido del empleado</small
-            >
-          </div>
-          <div class="form-group">
-            <label for="email">Correo:</label>
-            <input
-              type="email"
-              class="form-control"
-              name="email"
-              id="email"
-              aria-describedby="emailHelpId"
-              placeholder="Correoelectronico@mail.co"
-              required
-              v-model="employee.email"
-            />
-            <small id="emailHelpId" class="form-text text-muted"
-              >Ingrese el correo electronico del empleado</small
-            >
-          </div>
+  <Modal ref="modal" @close="close">
+    <template v-slot:title>
+      <span class="text-h5">Datos Empleado</span>
+    </template>
 
-          <div class="btn-group" role="group" aria-label="">
-            <button type="submit" class="btn btn-outline-success">
-              Modificar
-            </button>
-            <router-link :to="{ name: 'List' }" class="btn btn-outline-danger"
-              >Cancelar</router-link
-            >
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+    <template v-slot:body>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            label="Legal name*"
+            hint="example of persistent helper text"
+            persistent-hint
+            required
+            v-model="employee.name"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            label="Email*"
+            required
+            v-model="employee.email"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+    </template>
+    <!-- actions -->
+    <template v-slot:actions>
+      <v-btn
+        color="blue darken-1"
+        text
+        aria-label="Agregar"
+        @click="employeeEvent"
+      >
+        Agregar
+      </v-btn>
+    </template>
+  </Modal>
 </template>
 
 <script>
-import { useRoute, useRouter } from "vue-router";
+import { ref, computed } from "vue";
 import { useStore } from "vuex";
-import { computed, onMounted } from "vue";
 
 import Swal from "sweetalert2";
 
+import Modal from "@/components/ModalForm.vue";
+import ConfirmAlert from "@/components/ConfirmAlert";
+
 export default {
-  setup() {
+  components: { Modal },
+  setup(props, ctx) {
     const store = useStore();
-    const route = useRoute();
-    const router = useRouter();
-    const { id } = route.query;
     let sendData = {};
 
-    onMounted(async () => {
-      await store.dispatch("crudStore/SearchEmployeesByID", id);
-    });
+    const employee = computed(() => store.state.crudStore.employee);
 
-    let employee = computed(() => store.state.crudStore.entries);
+    const employeeEvent = async () => {
+      sendData["name"] = employee.value.name;
+      sendData["email"] = employee.value.email;
 
-    const UpdateEmployee = async () => {
-      sendData = {
-        id,
-        name: employee.value.name,
-        email: employee.value.email,
-      };
-      console.log("sendData", sendData);
-      const { isConfirmed } = await Swal.fire({
+      await UpdateEmployee(sendData);
+    };
+
+    const UpdateEmployee = async (sendData) => {
+      const isConfirmed = await ConfirmAlert.confirmAlert({
         title: "¿Está seguro?",
         text: "Los datos del empleado serán actualizados!",
         icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Si, estoy seguro!",
       });
 
       if (isConfirmed) {
@@ -108,7 +90,9 @@ export default {
               "La entrada ha sido actualizada",
               "success"
             );
-            router.push({ name: "List" });
+
+            ctx.emit("finishSuccess");
+            modal.value.close();
           } else {
             Swal.fire(
               "Oops!",
@@ -126,18 +110,30 @@ export default {
       }
     };
 
+    const modal = ref(null);
+    const open = async ({ idEmployee }) => {
+      sendData["id"] = idEmployee;
+      console.log("Entra con ID", idEmployee);
+      try {
+        await store.dispatch("crudStore/SearchEmployeesByID", idEmployee);
+
+        console.log("Employee", employee.value);
+        console.log("store", store.state.crudStore.employee);
+      } catch (error) {
+        console.error("Error en la busqueda: ", error);
+      }
+      modal.value.open();
+    };
+
     return {
       employee,
-      UpdateEmployee,
+      open,
+      close,
+      modal,
+      employeeEvent,
     };
   },
 };
 </script>
 
-<style scoped>
-.btn-group {
-  margin-top: 2rem;
-  display: block;
-  text-align: center;
-}
-</style>
+<style scoped></style>

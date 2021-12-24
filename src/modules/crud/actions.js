@@ -15,7 +15,7 @@ export default {
                 const resp = await response.json();
                 return new Promise((resolve, reject) => {
                     response.ok ? resolve(resp) : reject(resp);
-                    commit("setEmployees", resp[0]);
+                    commit("setEmployeeById", resp[0]);
                 });
             }
         );
@@ -29,7 +29,7 @@ export default {
             const res = await response.json();
             return new Promise((resolve, reject) => {
                 response.ok ? resolve(res) : reject(res);
-                commit("setEmployees", res);
+                console.log(commit);
             });
         });
     },
@@ -46,7 +46,7 @@ export default {
 
             return new Promise((resolve, reject) => {
                 response.ok ? resolve(resp) : reject(resp);
-                commit("setEmployees", resp);
+                console.log(commit);
             });
         });
     },

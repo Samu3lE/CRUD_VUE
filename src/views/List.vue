@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <router-link to="/create" class="btn btn-outline-warning btn-crear"
-      >Crear Nuevo Empleado</router-link
-    >
+    <button class="btn btn-outline-warning btn-crear" @click="modalEvent">
+      Crear Nuevo Empleado
+    </button>
 
     <div class="card">
       <div class="card-header">Empleados</div>
@@ -34,7 +34,7 @@
             <template v-if="dataField === 'Actions'">
               <div class="btn-group" role="group" aria-label="">
                 <button
-                  v-on:click="showAlertUpdate(dataRow)"
+                  v-on:click="modalEventUpdate(dataRow)"
                   class="btn btn-outline-info"
                 >
                   <svg
@@ -86,6 +86,8 @@
       </div>
     </div>
   </div>
+  <Create ref="modal_create" @finish-success="getListEmployees" />
+  <Edit ref="modal_edit" @finish-success="getListEmployees" />
 </template>
 
 <script>
@@ -95,46 +97,60 @@ import { useRouter } from "vue-router";
 
 import Swal from "sweetalert2";
 
+import Create from "./Create.vue";
+import Edit from "./Edit.vue";
 import TableCustom from "@/components/Table.vue";
+
+import ConfirmAlert from "@/components/ConfirmAlert";
 
 export default {
   name: "ListEmployees",
   components: {
+    Create,
+    Edit,
     TableCustom,
   },
-
+  data: () => ({
+    dialog: false,
+  }),
   setup() {
     const store = useStore();
     const router = useRouter();
-    const EmployeesList = ref(null);
 
-    console.log(EmployeesList);
-    console.log(TableCustom);
+    const getListEmployees = () => store.dispatch("crudStore/SearchEmployees");
+
     onMounted(() => {
-      store.dispatch("crudStore/SearchEmployees");
+      getListEmployees();
     });
+
     const employees = computed(() => store.state.crudStore.entries);
 
-    const showAlertUpdate = (idEmployee) => {
-      // useRouter().push({ name: "entry", params: { id: idEmployee } });
-      // window.location.href = `/edit/:${idEmployee}`;
-      router.push({
-        name: "Edit",
-        query: {
-          id: idEmployee,
-        },
-      });
+    const modal_edit = ref(null);
+
+    const modalEventUpdate = ({ id: idEmployee }) => {
+      console.log("Entra en Modal Update");
+      modal_edit.value.open({ idEmployee });
+
+      // router.push({
+      //   name: "Edit",
+      //   query: {
+      //     id: idEmployee,
+      //   },
+      // });
+    };
+
+    const modal_create = ref(null);
+
+    const modalEvent = () => {
+      console.log("Entra en modal");
+      modal_create.value.open();
     };
 
     const showAlertDelete = async ({ id: idEmployee }) => {
-      const { isConfirmed } = await Swal.fire({
+      const isConfirmed = await ConfirmAlert.confirmAlert({
         title: "¿Está seguro?",
         text: "Una vez borrado, no se puede recuperar!",
         icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Si, estoy seguro!",
       });
 
       if (isConfirmed) {
@@ -163,10 +179,8 @@ export default {
           "crudStore/DeleteEmployee",
           idEmployee
         );
-        console.log("datos luego de eliminar", deleteData);
-        return true;
+        return deleteData;
       } catch (error) {
-        console.error("Error Delete", error);
         return false;
       }
     };
@@ -174,8 +188,11 @@ export default {
     return {
       employees,
       showAlertDelete,
-      showAlertUpdate,
-      deleteEmployee,
+      modalEventUpdate,
+      modalEvent,
+      modal_create,
+      modal_edit,
+      getListEmployees,
     };
   },
 };
