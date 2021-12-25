@@ -7,22 +7,24 @@
     <template v-slot:body>
       <v-row>
         <v-col cols="12">
-          <v-text-field
+          <InpuText
             label="Legal name*"
-            hint="example of persistent helper text"
-            persistent-hint
-            required
-            v-model="employee.name"
-          ></v-text-field>
+            hint=""
+            v-model.trim.lazy="employee.name"
+            :value="employee.name"
+            :errors="formValuesErrors.name"
+          />
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-text-field
+          <InpuText
             label="Email*"
-            required
-            v-model="employee.email"
-          ></v-text-field>
+            hint=""
+            v-model.trim.lazy="employee.email"
+            :value="employee.email"
+            :errors="formValuesErrors.email"
+          />
         </v-col>
       </v-row>
     </template>
@@ -45,18 +47,49 @@ import { ref } from "vue";
 import { useStore } from "vuex";
 
 import Swal from "sweetalert2";
-
+import validations from "@/validationsForm/crud/ValidationsForm";
 import Modal from "@/components/ModalForm.vue";
+import InpuText from "@/components/InputText.vue";
 
 export default {
-  components: { Modal },
+  components: { Modal, InpuText },
   setup(props, ctx) {
     const store = useStore();
 
     const employee = ref({});
 
+    const formValuesErrors = ref({});
+
     const employeeEvent = async () => {
-      await CreateEmployee(employee.value);
+      try {
+        await validations.schemaCreate.validate(employee.value, {
+          abortEarly: false,
+        });
+
+        for (const key in formValuesErrors.value) {
+          formValuesErrors.value[key] = [];
+        }
+        try {
+          await CreateEmployee(employee.value);
+        } catch (err) {
+          if (err?.errors) {
+            for (const key in formValuesErrors.value) {
+              formValuesErrors.value[key] = [];
+            }
+
+            const { errors } = err;
+            for (const error in errors) {
+              formValuesErrors.value[error] = err.errors[error];
+            }
+          }
+        }
+      } catch (err) {
+        console.log("createEvent -> catch", err);
+        formValuesErrors.value = validations.getErrorsFromYup({
+          arr: formValuesErrors.value,
+          err,
+        });
+      }
     };
 
     const CreateEmployee = async (sendData) => {
@@ -105,6 +138,7 @@ export default {
       close,
       modal,
       employeeEvent,
+      formValuesErrors,
     };
   },
 };

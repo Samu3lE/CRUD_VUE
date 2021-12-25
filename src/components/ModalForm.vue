@@ -87,7 +87,7 @@ export default {
 }
 
 .v-container {
-  width: 35vw;
+  width: 30vw;
 }
 @media screen and (min-width: 1024px) {
   .v-container {
