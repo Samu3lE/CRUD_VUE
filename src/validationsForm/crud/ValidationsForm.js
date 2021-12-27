@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-export const schemaCreateVal = yup.object().shape({
+export const schemaCreate = yup.object().shape({
     name: yup.string().required().min(3).max(50),
     email: yup.string().required().email(),
     is_active: yup.boolean(),

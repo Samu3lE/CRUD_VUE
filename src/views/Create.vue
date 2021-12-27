@@ -46,14 +46,14 @@
 import { ref } from "vue";
 import { useStore } from "vuex";
 
-import Swal from "sweetalert2";
 import {
-  schemaCreateVal,
+  schemaCreate,
   getErrorsFromYup,
 } from "@/validationsForm/crud/ValidationsForm";
 
 import Modal from "@/components/ModalForm.vue";
 import InpuText from "@/components/InputText.vue";
+import ConfirmAlert from "@/components/ConfirmAlert";
 
 export default {
   components: { Modal, InpuText },
@@ -64,46 +64,37 @@ export default {
 
     const formValuesErrors = ref({});
 
-    const CreateEmployee = async (sendData) => {
+    const createEmployee = async (sendData) => {
       try {
-        const Created = await store.dispatch(
+        const created = await store.dispatch(
           "crudStore/CreateEmployee",
           sendData
         );
 
-        if (Created) {
-          const isConfirm = await Swal.fire(
-            "Registrado!",
-            "El empleado ha sido registrado exitosamente",
-            "success"
-          );
+        if (created) {
+          const isConfirm = await ConfirmAlert.confirmSuccess({
+            title: "Registrado!",
+            text: "El empleado ha sido registrado exitosamente",
+            icon: "success",
+          });
 
           if (isConfirm) {
             modal.value.close();
             ctx.emit("finishSuccess");
           }
-          // router.push({ name: "List" });
         } else {
-          Swal.fire("Oops!", "El empleado no ha sido registrado", "error");
+          ConfirmAlert.confirmError("El empleado no ha sido registrado");
         }
       } catch (error) {
-        Swal.fire(
-          "Oops!",
-          "El empleado no ha sido registrado: " + error,
-          "error"
+        ConfirmAlert.confirmError(
+          "El empleado no ha sido registrado: " + error
         );
       }
     };
 
     const employeeEvent = async () => {
-      // const schemaCreateVal = yup.object().shape({
-      //   name: yup.string().required().min(3).max(50),
-      //   email: yup.string().required().email(),
-      //   is_active: yup.boolean(),
-      // });
-
       try {
-        await schemaCreateVal.validate(employee.value, {
+        await schemaCreate.validate(employee.value, {
           abortEarly: false,
         });
 
@@ -111,7 +102,7 @@ export default {
           formValuesErrors.value[key] = [];
         }
         try {
-          await CreateEmployee(employee.value);
+          await createEmployee(employee.value);
         } catch (err) {
           if (err?.errors) {
             for (const key in formValuesErrors.value) {
@@ -135,7 +126,6 @@ export default {
 
     const modal = ref(null);
     const open = () => {
-      console.log("entra Open");
       for (const key in employee.value) {
         employee.value[key] = "";
       }

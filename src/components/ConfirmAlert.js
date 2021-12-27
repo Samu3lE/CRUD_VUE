@@ -14,4 +14,23 @@ export default {
 
         return isConfirmed;
     },
+
+    async confirmSuccess(title, text, icon) {
+        return Swal.fire(title, text, icon);
+    },
+
+    async confirmError(text) {
+        return Swal.fire("Oops!", text, "error");
+    },
+
+    async showLoading() {
+        return Swal.showLoading();
+    },
+
+    async loadMessage() {
+        Swal.fire({
+            title: "Espere por favor",
+            allowOutsideClick: false,
+        });
+    },
 };

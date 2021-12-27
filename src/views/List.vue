@@ -95,8 +95,6 @@ import { computed, onMounted, ref } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
-import Swal from "sweetalert2";
-
 import Create from "./Create.vue";
 import Edit from "./Edit.vue";
 import TableCustom from "@/components/Table.vue";
@@ -128,21 +126,12 @@ export default {
     const modal_edit = ref(null);
 
     const modalEventUpdate = ({ id: idEmployee }) => {
-      console.log("Entra en Modal Update");
       modal_edit.value.open({ idEmployee });
-
-      // router.push({
-      //   name: "Edit",
-      //   query: {
-      //     id: idEmployee,
-      //   },
-      // });
     };
 
     const modal_create = ref(null);
 
     const modalEvent = () => {
-      console.log("Entra en modal");
       modal_create.value.open();
     };
 
@@ -154,21 +143,22 @@ export default {
       });
 
       if (isConfirmed) {
-        Swal.fire({
-          title: "Espere por favor",
-          allowOutsideClick: false,
-        });
-        Swal.showLoading();
+        await ConfirmAlert.loadMessage();
+        await ConfirmAlert.showLoading();
+
         const deleted = await deleteEmployee(idEmployee);
         if (deleted) {
-          await Swal.fire(
-            "Eliminado!",
-            "La entrada ha sido eliminada",
-            "success"
-          );
+          await ConfirmAlert.confirmSuccess({
+            title: "Eliminado!",
+            text: "La entrada ha sido eliminada",
+            icon: "success",
+          });
+
           router.go();
         } else {
-          Swal.fire("Oops!", "La entrada no ha sido eliminada", "error");
+          ConfirmAlert.confirmError(
+            "La entrada no ha sido eliminada" + deleted
+          );
         }
       }
     };

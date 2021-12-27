@@ -45,13 +45,12 @@
 <script>
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
-import Swal from "sweetalert2";
 
 import Modal from "@/components/ModalForm.vue";
 import InpuText from "@/components/InputText.vue";
 import ConfirmAlert from "@/components/ConfirmAlert";
 import {
-  schemaCreateVal,
+  schemaCreate,
   getErrorsFromYup,
 } from "@/validationsForm/crud/ValidationsForm";
 
@@ -70,7 +69,7 @@ export default {
       sendData["email"] = employee.value.email;
 
       try {
-        await schemaCreateVal.validate(sendData, {
+        await schemaCreate.validate(sendData, {
           abortEarly: false,
         });
 
@@ -78,7 +77,7 @@ export default {
           formValuesErrors.value[key] = [];
         }
         try {
-          await UpdateEmployee(sendData);
+          await updateEmployee(sendData);
         } catch (err) {
           if (err?.errors) {
             for (const key in formValuesErrors.value) {
@@ -100,7 +99,7 @@ export default {
       }
     };
 
-    const UpdateEmployee = async (sendData) => {
+    const updateEmployee = async (sendData) => {
       const isConfirmed = await ConfirmAlert.confirmAlert({
         title: "¿Está seguro?",
         text: "Los datos del empleado serán actualizados!",
@@ -108,11 +107,8 @@ export default {
       });
 
       if (isConfirmed) {
-        Swal.fire({
-          title: "Espere por favor",
-          allowOutsideClick: false,
-        });
-        Swal.showLoading();
+        await ConfirmAlert.loadMessage();
+        await ConfirmAlert.showLoading();
 
         try {
           const updated = await store.dispatch(
@@ -121,26 +117,22 @@ export default {
           );
 
           if (updated) {
-            await Swal.fire(
-              "Actualizado!",
-              "La entrada ha sido actualizada",
-              "success"
-            );
+            await ConfirmAlert.confirmSuccess({
+              title: "Actualizado!",
+              text: "La entrada ha sido actualizada",
+              icon: "success",
+            });
 
             ctx.emit("finishSuccess");
             modal.value.close();
           } else {
-            Swal.fire(
-              "Oops!",
-              "Los datos no fueron actualizados: " + updated,
-              "error"
+            ConfirmAlert.confirmError(
+              "Los datos no fueron actualizados: " + updated
             );
           }
         } catch (error) {
-          Swal.fire(
-            "Oops!",
-            "Los datos no fueron actualizados: " + error,
-            "error"
+          ConfirmAlert.confirmError(
+            "Los datos no fueron actualizados: " + error
           );
         }
       }
@@ -149,12 +141,9 @@ export default {
     const modal = ref(null);
     const open = async ({ idEmployee }) => {
       sendData["id"] = idEmployee;
-      console.log("Entra con ID", idEmployee);
+
       try {
         await store.dispatch("crudStore/SearchEmployeesByID", idEmployee);
-
-        console.log("Employee", employee.value);
-        console.log("store", store.state.crudStore.employee);
       } catch (error) {
         console.error("Error en la busqueda: ", error);
       }
