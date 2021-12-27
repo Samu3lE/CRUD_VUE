@@ -7,22 +7,24 @@
     <template v-slot:body>
       <v-row>
         <v-col cols="12">
-          <v-text-field
+          <InpuText
             label="Legal name*"
-            hint="example of persistent helper text"
-            persistent-hint
-            required
-            v-model="employee.name"
-          ></v-text-field>
+            hint=""
+            v-model.trim.lazy="employee.name"
+            :value="employee.name"
+            :errors="formValuesErrors.name"
+          />
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-text-field
+          <InpuText
             label="Email*"
-            required
-            v-model="employee.email"
-          ></v-text-field>
+            hint=""
+            v-model.trim.lazy="employee.email"
+            :value="employee.email"
+            :errors="formValuesErrors.email"
+          />
         </v-col>
       </v-row>
     </template>
@@ -43,25 +45,59 @@
 <script>
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
-
 import Swal from "sweetalert2";
 
 import Modal from "@/components/ModalForm.vue";
+import InpuText from "@/components/InputText.vue";
 import ConfirmAlert from "@/components/ConfirmAlert";
+import {
+  schemaCreateVal,
+  getErrorsFromYup,
+} from "@/validationsForm/crud/ValidationsForm";
 
 export default {
-  components: { Modal },
+  components: { Modal, InpuText },
   setup(props, ctx) {
     const store = useStore();
     let sendData = {};
 
     const employee = computed(() => store.state.crudStore.employee);
 
+    const formValuesErrors = ref({});
+
     const employeeEvent = async () => {
       sendData["name"] = employee.value.name;
       sendData["email"] = employee.value.email;
 
-      await UpdateEmployee(sendData);
+      try {
+        await schemaCreateVal.validate(sendData, {
+          abortEarly: false,
+        });
+
+        for (const key in formValuesErrors.value) {
+          formValuesErrors.value[key] = [];
+        }
+        try {
+          await UpdateEmployee(sendData);
+        } catch (err) {
+          if (err?.errors) {
+            for (const key in formValuesErrors.value) {
+              formValuesErrors.value[key] = [];
+            }
+
+            const { errors } = err;
+            for (const error in errors) {
+              formValuesErrors.value[error] = err.errors[error];
+            }
+          }
+        }
+      } catch (err) {
+        console.log("createEvent -> catch", err);
+        formValuesErrors.value = getErrorsFromYup({
+          arr: formValuesErrors.value,
+          err,
+        });
+      }
     };
 
     const UpdateEmployee = async (sendData) => {
@@ -131,6 +167,7 @@ export default {
       close,
       modal,
       employeeEvent,
+      formValuesErrors,
     };
   },
 };

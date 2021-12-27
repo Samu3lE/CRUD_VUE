@@ -32,7 +32,7 @@
               data-bs-dismiss="modal"
               aria-label="Close"
             >
-              Close
+              Cerrar
             </v-btn>
           </slot>
           <slot name="actions"></slot>

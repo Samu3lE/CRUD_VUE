@@ -9,12 +9,14 @@
       @keyup="onChange"
     ></v-text-field>
 
-    <template
-      :class="[errors.length ? 'invalid-feedback-custom-label ' : '']"
-      v-if="errors.length"
-    >
+    <template v-if="errors.length">
       <ul>
-        <li v-for="(item, index) in errors" :key="index" :value="item">
+        <li
+          v-for="(item, index) in errors"
+          :key="index"
+          :value="item"
+          :class="[errors.length ? 'invalid-feedback-custom-label ' : '']"
+        >
           {{ item }}
         </li>
       </ul>

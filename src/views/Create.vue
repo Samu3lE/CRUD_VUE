@@ -47,7 +47,11 @@ import { ref } from "vue";
 import { useStore } from "vuex";
 
 import Swal from "sweetalert2";
-import validations from "@/validationsForm/crud/ValidationsForm";
+import {
+  schemaCreateVal,
+  getErrorsFromYup,
+} from "@/validationsForm/crud/ValidationsForm";
+
 import Modal from "@/components/ModalForm.vue";
 import InpuText from "@/components/InputText.vue";
 
@@ -59,38 +63,6 @@ export default {
     const employee = ref({});
 
     const formValuesErrors = ref({});
-
-    const employeeEvent = async () => {
-      try {
-        await validations.schemaCreate.validate(employee.value, {
-          abortEarly: false,
-        });
-
-        for (const key in formValuesErrors.value) {
-          formValuesErrors.value[key] = [];
-        }
-        try {
-          await CreateEmployee(employee.value);
-        } catch (err) {
-          if (err?.errors) {
-            for (const key in formValuesErrors.value) {
-              formValuesErrors.value[key] = [];
-            }
-
-            const { errors } = err;
-            for (const error in errors) {
-              formValuesErrors.value[error] = err.errors[error];
-            }
-          }
-        }
-      } catch (err) {
-        console.log("createEvent -> catch", err);
-        formValuesErrors.value = validations.getErrorsFromYup({
-          arr: formValuesErrors.value,
-          err,
-        });
-      }
-    };
 
     const CreateEmployee = async (sendData) => {
       try {
@@ -120,6 +92,44 @@ export default {
           "El empleado no ha sido registrado: " + error,
           "error"
         );
+      }
+    };
+
+    const employeeEvent = async () => {
+      // const schemaCreateVal = yup.object().shape({
+      //   name: yup.string().required().min(3).max(50),
+      //   email: yup.string().required().email(),
+      //   is_active: yup.boolean(),
+      // });
+
+      try {
+        await schemaCreateVal.validate(employee.value, {
+          abortEarly: false,
+        });
+
+        for (const key in formValuesErrors.value) {
+          formValuesErrors.value[key] = [];
+        }
+        try {
+          await CreateEmployee(employee.value);
+        } catch (err) {
+          if (err?.errors) {
+            for (const key in formValuesErrors.value) {
+              formValuesErrors.value[key] = [];
+            }
+
+            const { errors } = err;
+            for (const error in errors) {
+              formValuesErrors.value[error] = err.errors[error];
+            }
+          }
+        }
+      } catch (err) {
+        console.log("createEvent -> catch", err);
+        formValuesErrors.value = getErrorsFromYup({
+          arr: formValuesErrors.value,
+          err,
+        });
       }
     };
 
