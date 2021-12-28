@@ -72,8 +72,8 @@ export default {
       this.dialog = true;
     },
     close() {
-      this.$emit("close");
-      // this.dialog = false;
+      // this.$emit("close");
+      this.dialog = false;
     },
   },
   mounted() {},

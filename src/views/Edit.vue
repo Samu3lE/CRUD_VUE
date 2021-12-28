@@ -124,7 +124,7 @@ export default {
             });
 
             modal.value.close();
-            ctx.emit("finishSuccess");
+            console.log(ctx.emit("finishSuccess"));
           } else {
             ConfirmAlert.confirmError(
               "Los datos no fueron actualizados: " + updated

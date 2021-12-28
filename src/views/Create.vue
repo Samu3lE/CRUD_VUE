@@ -81,7 +81,7 @@ export default {
           if (isConfirm) {
             modal.value.close();
 
-            ctx.emit("finishSuccess");
+            console.log(ctx.emit("finishSuccess"));
           }
         } else {
           ConfirmAlert.confirmError("El empleado no ha sido registrado");
