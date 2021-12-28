@@ -80,6 +80,7 @@ export default {
 
           if (isConfirm) {
             modal.value.close();
+
             ctx.emit("finishSuccess");
           }
         } else {

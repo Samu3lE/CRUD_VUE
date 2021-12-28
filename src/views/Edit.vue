@@ -123,8 +123,8 @@ export default {
               icon: "success",
             });
 
-            ctx.emit("finishSuccess");
             modal.value.close();
+            ctx.emit("finishSuccess");
           } else {
             ConfirmAlert.confirmError(
               "Los datos no fueron actualizados: " + updated
