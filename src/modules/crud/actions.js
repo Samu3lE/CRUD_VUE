@@ -1,28 +1,31 @@
 export default {
     async SearchEmployees({ commit }) {
-        return fetch("http://localhost/empleados/?list").then(async(response) => {
-            const resp = await response.json();
-            return new Promise((resolve, reject) => {
-                response.ok ? resolve(resp) : reject(resp);
-                commit("setEmployees", resp);
-            });
-        });
-    },
-
-    async SearchEmployeesByID({ commit }, id_employee) {
-        return fetch(`http://localhost/empleados/?search=${id_employee}`).then(
+        return fetch("https://crud-vue-test.herokuapp.com/?list").then(
             async(response) => {
+                console.log(response);
                 const resp = await response.json();
                 return new Promise((resolve, reject) => {
                     response.ok ? resolve(resp) : reject(resp);
-                    commit("setEmployeeById", resp[0]);
+                    commit("setEmployees", resp);
                 });
             }
         );
     },
 
+    async SearchEmployeesByID({ commit }, id_employee) {
+        return fetch(
+            `https://crud-vue-test.herokuapp.com/?search=${id_employee}`
+        ).then(async(response) => {
+            const resp = await response.json();
+            return new Promise((resolve, reject) => {
+                response.ok ? resolve(resp) : reject(resp);
+                commit("setEmployeeById", resp[0]);
+            });
+        });
+    },
+
     async CreateEmployee({ commit }, sendData) {
-        return fetch("http://localhost/empleados/?create=1", {
+        return fetch("https://crud-vue-test.herokuapp.com/?create=1", {
             method: "POST",
             body: JSON.stringify(sendData),
         }).then(async(response) => {
@@ -36,9 +39,8 @@ export default {
 
     async UpdateEmployee({ commit }, sendData) {
         const { id } = sendData;
-        console.log("fetchUpdate:", `http://localhost/empleados/?update=${id}`);
 
-        return fetch(`http://localhost/empleados/?update=${id}`, {
+        return fetch(`https://crud-vue-test.herokuapp.com/?update=${id}`, {
             method: "POST",
             body: JSON.stringify(sendData),
         }).then(async(response) => {
@@ -53,13 +55,13 @@ export default {
 
     async DeleteEmployee({ commit }, idEmployee) {
         console.log("Commit", commit);
-        return fetch(`http://localhost/empleados/?delete=${idEmployee}`).then(
-            async(response) => {
-                const res = await response.json();
-                return new Promise((resolve, reject) => {
-                    response.ok ? resolve(res) : reject(res);
-                });
-            }
-        );
+        return fetch(
+            `https://crud-vue-test.herokuapp.com/?delete=${idEmployee}`
+        ).then(async(response) => {
+            const res = await response.json();
+            return new Promise((resolve, reject) => {
+                response.ok ? resolve(res) : reject(res);
+            });
+        });
     },
 };
