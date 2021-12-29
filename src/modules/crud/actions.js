@@ -13,15 +13,19 @@ export default {
     },
 
     async SearchEmployeesByID({ commit }, id_employee) {
-        return fetch(
-            `https://crud-vue-test.herokuapp.com/?search=${id_employee}`
-        ).then(async(response) => {
-            const resp = await response.json();
-            return new Promise((resolve, reject) => {
-                response.ok ? resolve(resp) : reject(resp);
-                commit("setEmployeeById", resp[0]);
+        try {
+            return fetch(
+                `https://crud-vue-test.herokuapp.com/?search=${id_employee}`
+            ).then(async(response) => {
+                const resp = await response.json();
+                return new Promise((resolve, reject) => {
+                    response.ok ? resolve(resp) : reject(resp);
+                    commit("setEmployeeById", resp);
+                });
             });
-        });
+        } catch (error) {
+            console.log(error);
+        }
     },
 
     async CreateEmployee({ commit }, sendData) {
