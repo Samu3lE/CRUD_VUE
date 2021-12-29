@@ -1,17 +1,15 @@
 export default {
     async SearchEmployees({ commit }) {
-        return fetch("https://crud-vue-test.herokuapp.com/?list", {
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-        }).then(async(response) => {
-            console.log(response);
-            const resp = await response.json();
-            return new Promise((resolve, reject) => {
-                response.ok ? resolve(resp) : reject(resp);
-                commit("setEmployees", resp);
-            });
-        });
+        return fetch("https://crud-vue-test.herokuapp.com/?list").then(
+            async(response) => {
+                const resp = await response.json();
+
+                return new Promise((resolve, reject) => {
+                    response.ok ? resolve(resp) : reject(resp);
+                    commit("setEmployees", resp);
+                });
+            }
+        );
     },
 
     async SearchEmployeesByID({ commit }, id_employee) {
