@@ -1,7 +1,42 @@
 import * as yup from "yup";
 
+const nameRegExp = new RegExp("[^a-zA-ZñÑ\\s]+", "gs");
+
+// yup.addMethod(yup.string, "name", () => {
+//     return this.test("name", (value) => {
+//         const { path, createError } = this;
+
+//         const valid = nameRegExp.test(value);
+//         if (!valid) {
+//             return createError({
+//                 path,
+//                 params: {
+//                     reference: path,
+//                     type: "name",
+//                 },
+//             });
+//         }
+//         return true;
+//     });
+// });
+
+// yup.addMethod(yup.string, "name", function(formats, parseStrict) {
+//     return this.transform(function(value, originalValue) {
+//         if (this.isType(value)) return value;
+
+//         value = Moment(originalValue, formats, parseStrict);
+
+//         return value.isValid() ? value.toDate() : new Date("");
+//     });
+// });
+
 export const schemaCreate = yup.object().shape({
-    name: yup.string().required().min(3).max(50),
+    name: yup
+        .string()
+        .required()
+        .min(3)
+        .max(50)
+        .test("name", "Name contain numbers", (value) => !nameRegExp.test(value)),
     email: yup.string().required().email(),
     is_active: yup.boolean(),
 });
