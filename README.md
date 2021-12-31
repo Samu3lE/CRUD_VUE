@@ -1,5 +1,10 @@
 # crudvue2
 
+
+## Project deployed
+
+https://samuele-crud-vue-template.netlify.app/
+
 ## Project setup
 ```
 yarn install
